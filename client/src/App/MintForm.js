@@ -32,16 +32,19 @@ class MintForm extends Component {
     const {
       humpContract,
       accounts,
+      mintedCallback,
     } = this.props;
 
-    await humpContract.methods.mintNft(
+    const result = await humpContract.methods.mintNft(
       accounts[0],
       dna,
       mother,
       father
     ).send({ from: accounts[0] });
 
-    console.log('Minted');
+    const id = result.events.Transfer.returnValues[2];
+    console.log('Minted', id);
+    mintedCallback(id);
   }
 
   render() {
