@@ -37,7 +37,9 @@
     "dotenv": "^9.0.0"
   },
   "dependencies": {
+    "@apollo/client": "^3.6.6",
     "@openzeppelin/contracts": "^4.6.0",
-    "@openzeppelin/network": "^0.4.3"
+    "@openzeppelin/network": "^0.4.3",
+    "graphql": "^16.5.0"
   }
 }
