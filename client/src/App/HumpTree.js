@@ -1,7 +1,11 @@
 import { useQuery } from 'urql';
+import { AnimatedTree } from 'react-tree-graph';
+import 'react-tree-graph/dist/style.css';
+import { useEffect } from 'react';
 
 const HumpTree = (props) => {
-  const [result] = useQuery({
+  let done = false;
+  const [result, reexecuteQuery] = useQuery({
     query: `
     {
       transfers(orderBy: tokenId, where: {to: "${props.account}"}) {
@@ -17,16 +21,35 @@ const HumpTree = (props) => {
     `
   });
 
+  useEffect(() => {
+    if (done || result.fetching) return;
+
+    // Set up to refetch in one second, if the query is idle
+    const timerId = setTimeout(() => {
+      reexecuteQuery({ requestPolicy: 'network-only' });
+    }, 1000);
+
+    return () => clearTimeout(timerId);
+  }, [result.fetching, reexecuteQuery, done]);
+
   const processTransfers = (transfers) => {
     const transfer = findTransferWithId(transfers, props.id);
+    if(!transfer)
+      return {};
+
+    done = true;
+
     const mother = findTransferWithId(transfers, transfer.motherId);
     const father = findTransferWithId(transfers, transfer.fatherId);
 
-    return `
-    Minted: ${transfer.tokenId}
-    Father: ${father.tokenId}
-    Mother: ${mother.tokenId}
-    `;
+    return {
+      name: transfer.tokenId,
+      children: [{
+        name: father.tokenId,
+      }, {
+        name: mother.tokenId,
+      }]
+    };
   }
 
   const findTransferWithId = (transfers, tokenId) => {
@@ -35,15 +58,19 @@ const HumpTree = (props) => {
 
   const { data, fetching, error } = result;
 
-  if (fetching) return "Loading...";
   if (!props.id) return "Mint a HUMPS token to see lineage";
+  if (fetching) return "Loading...";
   if (error) return <pre>{error.message}</pre>
 
   return (
     <div>
       <h1>HUMPS Lineage</h1>
       <div>
-        {processTransfers(data.transfers)}
+        <AnimatedTree
+          data={processTransfers(data.transfers)}
+          height={400}
+          width={400}
+        />;
       </div>
     </div>
   );

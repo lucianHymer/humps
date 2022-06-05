@@ -7,7 +7,7 @@ import HumpTree from "./App/HumpTree";
 import "./App.css";
 
 class App extends Component {
-  state = { web3: null, accounts: null, humpContract: null, mintedId: 8 };
+  state = { web3: null, accounts: null, humpContract: null, mintedId: null };
 
   componentDidMount = async () => {
     try {
@@ -56,7 +56,6 @@ class App extends Component {
           mintedCallback={this.setMintedId}
         />
         <br />
-        ID: {this.state.mintedId}
         <HumpTree account={this.state.accounts[0]} id={this.state.mintedId} />
       </div>
     );
