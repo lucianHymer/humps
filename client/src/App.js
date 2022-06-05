@@ -1,33 +1,38 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import Humps from "./contracts/Humps.json";
-import getWeb3 from "./getWeb3";
 import MintForm from "./App/MintForm";
 import HumpTree from "./App/HumpTree";
+import { WalletLinkConnector } from "@web3-react/walletlink-connector";
+import { useWeb3React } from '@web3-react/core'
+import Web3 from 'web3'
 
 import "./App.css";
 
-class App extends Component {
-  state = { web3: null, accounts: null, humpContract: null, mintedId: null };
+const CoinbaseWallet = new WalletLinkConnector({
+ url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+ appName: "HUMPS",
+ supportedChainIds: [1, 3, 4, 5, 42, 80001],
+});
 
-  componentDidMount = async () => {
+function App(){
+  const { activate, account, chainId, library } = useWeb3React();
+  const [ humpContract, setHumpContract ] = useState(null);
+  const [ mintedId, setMintedId ] = useState(null);
+
+  useEffect( () => {
     try {
-      // Get network provider and web3 instance.
-      const web3 = await getWeb3();
+      if(library){
+        console.log('Account', account);
 
-      // Use web3 to get the user's accounts.
-      const accounts = await web3.eth.getAccounts();
+        const web3 = new Web3(library.provider);
 
-      // Get the contract instance.
-      const networkId = await web3.eth.net.getId();
-      const deployedNetwork = Humps.networks[networkId];
-      const humpContract = new web3.eth.Contract(
-        Humps.abi,
-        deployedNetwork && deployedNetwork.address,
-      );
-
-      // Set web3, accounts, and contract to the state, and then proceed with an
-      // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, humpContract }); //, this.runExample);
+        // Get the contract instance.
+        const deployedNetwork = Humps.networks[chainId];
+        setHumpContract(new web3.eth.Contract(
+          Humps.abi,
+          deployedNetwork && deployedNetwork.address,
+        ));
+      }
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -35,31 +40,29 @@ class App extends Component {
       );
     console.error(error);
     }
-  };
+  }, [account, chainId, library]);
 
-  setMintedId = (mintedId) => {
-    this.setState({mintedId});
-  };
-
-  render() {
-    console.log("TEST0");
-    if (!this.state.web3) {
-      return <div>Loading Web3, accounts, and contract...</div>;
-    }
-    return (
-      <div className="App">
-        <h1>HUMPS</h1>
-        <p>Mint your HUMPS token here.</p>
-        <MintForm
-          accounts={this.state.accounts}
-          humpContract={this.state.humpContract}
-          mintedCallback={this.setMintedId}
-        />
-        <br />
-        <HumpTree account={this.state.accounts[0]} id={this.state.mintedId} />
-      </div>
-    );
-  }
+  return (
+    <div className="App">
+      <h1>HUMPS</h1>
+      <p>Mint your HUMPS token here.</p>
+      <br />
+      {
+        account ?
+          <div>
+          <MintForm
+          accounts={[account]}
+          humpContract={humpContract}
+          mintedCallback={setMintedId}
+          />
+          <br />
+          <HumpTree account={account} id={mintedId} />
+        </div>
+        :
+        <button onClick={() => activate(CoinbaseWallet) }>Connect Coinbase Wallet</button>
+      }
+    </div>
+  );
 }
 
 export default App;
