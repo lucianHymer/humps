@@ -21,7 +21,7 @@ type OwnershipTransferred @entity {
 type Transfer @entity {
   id: ID!
   from: Bytes! # address
-  to: Bytes! # address
+  to: Bytes! @id
   tokenId: BigInt! # uint256
   dna: Bytes!
   motherId: BigInt!

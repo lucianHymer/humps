@@ -51,7 +51,7 @@ class App extends Component {
           humpContract={this.state.humpContract}
         />
         <br />
-        <HumpTree />
+        <HumpTree account={this.state.accounts[0]}/>
       </div>
     );
   }

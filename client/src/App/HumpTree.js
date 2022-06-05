@@ -1,23 +1,20 @@
-import React from "react";
 import { useQuery } from 'urql';
 
-const FILMS_QUERY = `
-  {
-    transfers(first: 5) {
-      id
-      from
-      to
-      tokenId
-      dna
-      motherId
-      fatherId
-    }
-  }
-`;
-
-export default function App() {
+const HumpTree = (props) => {
   const [result] = useQuery({
-    query: FILMS_QUERY,
+    query: `
+    {
+      transfers(orderBy: tokenId, where: {to: "${props.account}"}) {
+        id
+        from
+        to
+        tokenId
+        dna
+        motherId
+        fatherId
+      }
+    }
+    `
   });
 
   const { data, fetching, error } = result;
@@ -32,7 +29,9 @@ export default function App() {
         {data.transfers.map((transfer) => (
           <li key={transfer.id}>{transfer.tokenId}</li>
         ))}
-      </ul>
+    </ul>
     </div>
   );
 }
+
+export default HumpTree;
