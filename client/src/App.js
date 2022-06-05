@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Humps from "./contracts/Humps.json";
 import getWeb3 from "./getWeb3";
 import MintForm from "./App/MintForm";
+import HumpTree from "./App/HumpTree";
 
 import "./App.css";
 
@@ -49,6 +50,8 @@ class App extends Component {
           accounts={this.state.accounts}
           humpContract={this.state.humpContract}
         />
+        <br />
+        <HumpTree />
       </div>
     );
   }
